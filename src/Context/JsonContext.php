@@ -94,6 +94,24 @@ class JsonContext extends BaseContext
     }
 
     /**
+     * Checks, that given JSON node is not null
+     *
+     * @Then the JSON node :node should not be null
+     */
+    public function theJsonNodeShouldNotBeNull($node)
+    {
+        $json = $this->getJson();
+
+        $actual = $this->inspector->evaluate($json, $node);
+
+        if (null == $actual) {
+            throw new \Exception(
+                sprintf('The node value is `%s`', json_encode($actual))
+            );
+        }
+    }
+
+    /**
      * Checks, that given JSON node is true
      *
      * @Then the JSON node :node should be true
