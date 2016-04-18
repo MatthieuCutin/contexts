@@ -32,6 +32,41 @@ class RestContext extends BaseContext
     }
 
     /**
+     * Sends a HTTP request
+     *
+     * @Given after authentication with method :loginMethod on :loginUrl as :login with password :password, i send an authenticated :method request to :url with body:
+     */
+    public function iSendAnAuthenticatedRequestTo($loginMethod, $loginUrl, $login, $password, $method, $url, PyStringNode $body = null)
+    {
+        $responseLogin = $this->request->send(
+            $loginMethod,
+            $this->locatePath($loginUrl),
+            [],
+            [],
+            json_encode([
+                '_username' => $login,
+                '_password' => $password
+                ]),
+            [ 'CONTENT_TYPE' => 'application/json' ]
+        );
+        $responseLoginData = json_decode($responseLogin->getContent(), true);
+
+        $response = $this->request->send(
+            $method,
+            $this->locatePath($url),
+            [],
+            [],
+            $body !== null ? $body->getRaw() : null,
+            [
+                'CONTENT_TYPE' => 'application/json',
+                'HTTP_Authorization' => sprintf('Bearer %s', $responseLoginData['token'])
+            ]
+        );
+
+        return $response;
+    }
+
+    /**
      * Sends a HTTP request with a some parameters
      *
      * @Given I send a :method request to :url with parameters:
@@ -204,7 +239,6 @@ class RestContext extends BaseContext
         }
         echo $text;
     }
-
 
     /**
      * @Then print the corresponding curl command
